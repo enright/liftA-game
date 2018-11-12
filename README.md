@@ -1,4 +1,1 @@
-These are the slides and source code for my presentation
-"Monads of Doom, Arrows of Time" at Silicon Valley Code Camp 2013.
-Thanks to all who attended and joined the discussion.
--Bill
+Example game prototype using liftA-syntax and liftA-node
