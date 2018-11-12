@@ -1,0 +1,19 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "jshintConfig": {
+    "esversion": 6
+  },
+  "dependencies": {
+    "express": "3.4.0",
+    "imghex": "*",
+    "jade": "0.30.0",
+    "lifta-syntax": "1.0.0",
+    "lifta-node": "1.0.1",
+    "socket.io": "0.9.x"
+  }
+}
