@@ -17,8 +17,6 @@ const eventA = liftaNode.eventA;
 const eventPropertyA = liftaNode.eventPropertyA;
 ```
 
-## Some things to note about the code above:
-
 We create a number of different kinds of arrows and them combine then into a single arrow - a single function. Examples are:
 
 ### A countdown arrow which listens to a tick, decreases a counter, and messages the client
@@ -79,3 +77,56 @@ This arrow is always repeated, but it actually doesn't go on forever. The timeou
 ```
 
 timeoutGameA first prepares the eventPropertyEmitterA with the event name and a property name and value to look for on the object sent with the event. eventPropertyEmitterA will not complete until 'tick' value is equal to the ticks allocated for the game. When this event happens, gameOver.second uses the second of the tuple to run the gameOver function, which informs the user the game is over, cancels any in-progress arrows (such as the countDownA above), and turns off the game clock.
+
+### Flexibility with tuples (a tuple of tuples!) shows how we can both share data and carry different data structures through a tricky composition
+```Javascript
+    var boardTileChangesA =
+      // split into two tuples, one for delays, one for board changes
+      ((x) => freeze([
+        [undefined, x.second],
+        [boardChanges, x.second]
+      ]))
+      .then(
+        // wait 4 ticks
+        constA(4).first.then(delayGameTicksA).first
+        // then change the tiles
+        .then(boardTileChange.second)
+        // wait 6 ticks
+        .then(constA(6).first.then(delayGameTicksA).first)
+        // and change them back
+        .then(boardTileChange.second)
+        // repeat this forever
+        .then(justRepeatA)
+        .repeat
+      );
+```
+
+We need to accomplish some animation in our game. A particular area of the game board actually changes over time in a cycle. We take the incoming data and create two tuples, sharing x.second (which is typically contextual data that does not change frequently). The first tuple is used for delay arrows (delaying for 4 and 6 ticks). Since this value comes from a constant arrow, we can simply initialize to undefined. The second tuple - [boardChanges, x.second] - contains the initial board changes. Note that each call to boardTileChange.second in the composite arrow returns a new tuple. boardChangeTiles actually returns the values _of the replaced board tiles_. So each time it is called in our composite arrow, the previous board tiles are restored. Since it repeats, we cycle between two sets of board tiles every four and six seconds.
+
+### It all comes together
+
+```Javascript
+    let p = lifta.P();
+    let runTheGame =
+      // wait for the start event, then start
+      eventA.then(startGameA)
+      .then(
+        countDownA
+        .fan(timeoutGameA)
+        .fan(playerMovementA)
+        .fan(takePrizesA)
+        .fan(boardTileChangesA)
+        .fan(chestAndKeyA)
+      );
+    runTheGame(freeze([freeze({
+      name: 'start-game'
+    }), freeze({
+      emitter,
+      game,
+      clock,
+      ticksInGame,
+      p
+    })]), () => { /* log game termination */ }, p);
+  }
+```
+We create the progress canceller which we will add to the context (because the timeoutA arrow uses it to cancel everything when the game ends). The game arrow is constructed with an initialize step followed by fanning of all the arrows to run in parallel. Simple! runTheGame creates the initial data which gives the name of the start game event as x.first, and the node event emitter, the game object, the clock, the length of the game and the canceller - all the context - in x.second.
