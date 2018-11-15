@@ -3,6 +3,14 @@
 ## Quest for Sushi
 This is an example prototype game created using liftA. The main purpose is to demonstrate construction and running of arrows. You can see how to create arrows than run in series and in parallel. liftA-syntax is used for fluent syntax. liftA-node contains arrows for working with EventEmitter.
 
+```
+git clone git@github.com:enright/liftA-game.git
+cd lifta-game
+npm install
+node appWithKeyAndChest
+```
+Then point your browser at http://localhost:3000/game1
+
 ## Using lifta-syntax and liftA-Node:
 
 ```javascript
